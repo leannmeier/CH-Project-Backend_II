@@ -15,7 +15,6 @@ app.use('/api/health', healthsRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/sessions', sessionsRouter);
 
-
 app.use(errorHandler);
 
 export { app };

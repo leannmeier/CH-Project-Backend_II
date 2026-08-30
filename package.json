@@ -4,7 +4,7 @@
   "description": "Plataforma de eventos con Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"No hay tests automatizados en este proyecto\"",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
   },
