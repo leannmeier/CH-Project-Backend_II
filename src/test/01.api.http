@@ -1,0 +1,6 @@
+GET http://localhost:9909/api/health
+###
+GET http://localhost:9909/api/events
+###
+GET http://localhost:9909/api/sessions
+
