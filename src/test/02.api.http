@@ -1,0 +1,12 @@
+### Agregamos un nuevo usuario
+POST http://localhost:9909/api/sessions/register
+Content-Type: application/json  
+
+{
+  "first_name": "Cosme",
+  "last_name": "Fulanito",
+  "email": "cosmefulanito@gmail.com",
+  "password": "1122334455"
+}
+
+### Si intetamos registrar el mismo usuario, nos va a dar un error

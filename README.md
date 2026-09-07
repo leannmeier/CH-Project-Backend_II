@@ -1,7 +1,7 @@
 # Plataforma de Eventos
 ## Descripción
 
-Backend de una plataforma de gestión de eventos e inscripciones. Esta primera entrega deja armada la base arquitectónica en capas (rutas, controladores, servicios, repositorios, DAO y modelos), la conexión a MongoDB Atlas y los primeros endpoints (`health`, `events`, `sessions`), todavía sin lógica de negocio. En las próximas entregas se van a incorporar autenticación con JWT y Passport, roles y autorización, gestión completa de eventos, tickets, inscripciones y control de cupos.
+Backend de una plataforma de gestión de eventos e inscripciones. A esta altura, el proyecto cuenta con la arquitectura base en capas (rutas, controladores, servicios, repositorios, DAO y modelos), conexión a MongoDB Atlas, y un flujo completo de registro de usuarios con validaciones, contraseñas hasheadas con bcrypt y control de emails duplicados sin exponer información sensible. Los eventos todavía no tienen lógica de negocio implementada. En las próximas entregas se van a incorporar login con JWT, roles y autorización, gestión completa de eventos, tickets, inscripciones y control de cupos.
 ## Tecnologías utilizadas
 
 - Node.js (ESM, v20+)
@@ -9,6 +9,7 @@ Backend de una plataforma de gestión de eventos e inscripciones. Esta primera e
 - MongoDB Atlas
 - Mongoose
 - dotenv
+- bcrypt
 ## Instalación
 
 Clonar el repositorio e instalar las dependencias:
@@ -62,25 +63,30 @@ CH-Project-Backend_II/
 │   │   ├── healths.controller.js
 │   │   └── sessions.controller.js
 │   ├── dao/
+│   │   └── sessions.dao.js
 │   ├── middlewares/
 │   │   └── errorHandler.js
 │   ├── models/
 │   │   ├── Event.js
 │   │   └── User.js
 │   ├── repositories/
+│   │   └── sessions.repository.js
 │   ├── routes/
 │   │   ├── events.router.js
 │   │   ├── healths.router.js
 │   │   └── sessions.router.js
 │   ├── services/
+│   │   └── sessions.service.js
 │   ├── test/
-│   |    └── 01.api.http
+│   |    └── 02.api.http
 │   └── utils/
-│       └── asyncHandler.js
+│       ├── asyncHandler.js
+│       └── password.util.js
 ├── .env.example
 ├── .gitignore
 ├── package.json
 ├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
 └── README.md
 ```
 ## Endpoints principales
@@ -112,9 +118,19 @@ o, en caso de error:
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/api/sessions` | Devuelve respuesta sobre las sesiones. Actualmente devuelve solo un array vacio
+| POST | `/api/sessions/register` | Genera un nuevo recurso dentro de la base de datos. El recurso debe cumplir ciertas condiciones para ser almacenado exitosamente. Contraseña con longitud minima de 8 caracteres, emails unicos y formato de email válido.
+```json
+{
+  "first_name": "Cosme",
+  "last_name": "Fulanito",
+  "email": "cosmefulanito@gmail.com",
+  "password": "1122334455"
+}
+```
+La contraseña se hashea con bcrypt para mayor seguridad
 
-Actualmente solo se dispone de estos endpoints. A medida que el proyecto continúa evolucionando, se incorporarán nuevas funcionalidades.
+- **201** si el documento fue creado exitosamente: `{ "status": "success", "payload": { ... } }`
+- **400** si hay un error en el mail o en la contraseña: `{ "status": "error", "message": "Error al validar los datos. Email invalido" }`
 ## Autor
 
 Meier Leandro Agustín - Analista de Sistemas

@@ -1,18 +1,25 @@
 import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema(
+let userSchema = new mongoose.Schema(
     {
-        userName: { type: String, required: true, unique: true },
-        password: { type: String, required: true },
-        userEmail: { type: String, required: true, unique: true },
-        status: { type: Boolean, default: true },
+        first_name: { type: String, required: true },
+        last_name: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true, select: false },
         role: {
                 type: String,
-                enum: ['Admin', 'Organizer', 'User'],
-                default: 'User'
+                enum: ['admin', 'organizer', 'user'],
+                default: 'user'
             }
     },
     { timestamps: true }
 )
+
+userSchema.set('toJSON', {
+    transform: function (doc, ret, options) {
+        delete ret.password;
+        return ret;
+    }
+});
 
 export const UserModel = mongoose.model('user', userSchema);
