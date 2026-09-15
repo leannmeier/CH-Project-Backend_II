@@ -1,7 +1,7 @@
 # Plataforma de Eventos
 ## Descripción
 
-Backend de una plataforma de gestión de eventos e inscripciones. A esta altura, el proyecto cuenta con la arquitectura base en capas (rutas, controladores, servicios, repositorios, DAO y modelos), conexión a MongoDB Atlas, y un flujo completo de registro de usuarios con validaciones, contraseñas hasheadas con bcrypt y control de emails duplicados sin exponer información sensible. Los eventos todavía no tienen lógica de negocio implementada. En las próximas entregas se van a incorporar login con JWT, roles y autorización, gestión completa de eventos, tickets, inscripciones y control de cupos.
+Backend de una plataforma de gestión de eventos e inscripciones, desarrollado como proyecto final del curso Backend II de Coderhouse. A esta altura, el proyecto cuenta con la arquitectura base en capas (rutas, controladores, servicios, repositorios, DAO y modelos), conexión a MongoDB Atlas, registro de usuarios con contraseñas hasheadas con bcrypt, y autenticación completa con JWT: login, sesión persistida en cookie `HttpOnly` y logout. Los eventos todavía no tienen lógica de negocio implementada. En las próximas entregas se van a incorporar roles y autorización, gestión completa de eventos, tickets, inscripciones y control de cupos.
 ## Tecnologías utilizadas
 
 - Node.js (ESM, v20+)
@@ -10,6 +10,8 @@ Backend de una plataforma de gestión de eventos e inscripciones. A esta altura,
 - Mongoose
 - dotenv
 - bcrypt
+- jsonwebtoken
+- cookie-parser
 ## Instalación
 
 Clonar el repositorio e instalar las dependencias:
@@ -30,6 +32,7 @@ PORT=1234
 NODE_ENV=development
 MONGO_URL=tu_url_de_mongodb
 JWT_SECRET=una-cadena-larga-y-aleatoria-que-vos-generes
+JWT_EXPIRES_IN=tiempo_de_expiracion_del_token_en_segundos
 ```
 
 Copiar y completar antes de ejecutar el proyecto:
@@ -45,7 +48,7 @@ La aplicación valida al iniciar que las variables críticas estén presentes y 
 
 ```bash
 pnpm start       # ejecuta el proyecto
-pnpm run dev     # ejecuta el proyecto con reinicio automático ante cambios (node --watch)
+pnpm dev     # ejecuta el proyecto con reinicio automático ante cambios (node --watch)
 ```
 
 El servidor queda disponible en `http://localhost:<PORT>` (por defecto, `http://localhost:1234`).
@@ -65,6 +68,7 @@ CH-Project-Backend_II/
 │   ├── dao/
 │   │   └── sessions.dao.js
 │   ├── middlewares/
+│   │   ├── auth.middleware.js
 │   │   └── errorHandler.js
 │   ├── models/
 │   │   ├── Event.js
@@ -78,10 +82,12 @@ CH-Project-Backend_II/
 │   ├── services/
 │   │   └── sessions.service.js
 │   ├── test/
-│   |    └── 02.api.http
+│   │   ├── 03.api.http
+│   |   └── (CASOS DE PRUEBA).png
 │   └── utils/
 │       ├── asyncHandler.js
-│       └── password.util.js
+│       ├── hash.js
+│       └── jwt.js
 ├── .env.example
 ├── .gitignore
 ├── package.json
@@ -107,18 +113,24 @@ o, en caso de error:
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/api/health` | Devuelve respuesta indicando que el servidor está activo.
+| GET | `/api/health` | Devuelve respuesta indicando que el servidor está activo. |
 
 ### EVENTS
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/api/events` | Devuelve respuesta sobre los eventos. Actualmente devuelve solo un array vacio
+| GET | `/api/events` | Devuelve respuesta sobre los eventos. Actualmente devuelve solo un array vacío. |
 
 ### SESSIONS
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| POST | `/api/sessions/register` | Genera un nuevo recurso dentro de la base de datos. El recurso debe cumplir ciertas condiciones para ser almacenado exitosamente. Contraseña con longitud minima de 8 caracteres, emails unicos y formato de email válido.
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| POST | `/api/sessions/register` | No | Registra un nuevo usuario. |
+| POST | `/api/sessions/login` | No | Inicia sesión y setea la cookie `currentUser` con el JWT. |
+| GET | `/api/sessions/current` | Sí (cookie) | Devuelve los datos del usuario autenticado. |
+| POST | `/api/sessions/logout` | No | Elimina la cookie de sesión. |
+
+**POST /api/sessions/register**
+
 ```json
 {
   "first_name": "Cosme",
@@ -127,10 +139,34 @@ o, en caso de error:
   "password": "1122334455"
 }
 ```
-La contraseña se hashea con bcrypt para mayor seguridad
 
-- **201** si el documento fue creado exitosamente: `{ "status": "success", "payload": { ... } }`
-- **400** si hay un error en el mail o en la contraseña: `{ "status": "error", "message": "Error al validar los datos. Email invalido" }`
+La contraseña se hashea con bcrypt antes de guardarse y nunca se devuelve en la respuesta.
+
+- **201**: `{ "status": "success", "payload": { "first_name": "...", "last_name": "...", "email": "...", "role": "user", "_id": "...", "createdAt": "...", "updatedAt": "..." } }`
+- **400** — campos faltantes, email con formato inválido o email ya registrado: `{ "status": "error", "message": "..." }`
+
+**POST /api/sessions/login**
+
+```json
+{
+  "email": "cosmefulanito@gmail.com",
+  "password": "1122334455"
+}
+```
+
+- **200**: setea la cookie `currentUser` (`HttpOnly`, `SameSite=Lax`, `Max-Age` según `JWT_EXPIRES_IN`) y responde `{ "status": "success", "message": "Login exitoso" }`
+- **401** — email inexistente o contraseña incorrecta (mismo mensaje en ambos casos, para no revelar cuál falló): `{ "status": "error", "message": "Credenciales inválidas" }`
+
+**GET /api/sessions/current**
+
+Requiere la cookie `currentUser` de un login previo.
+
+- **200**: `{ "status": "success", "payload": { "id": "...", "email": "...", "role": "user" } }`
+- **401** — sin cookie, o con un token inválido/modificado/expirado: `{ "status": "error", "message": "No autorizado" }` o `{ "status": "error", "message": "Token inválido o expirado" }`
+
+**POST /api/sessions/logout**
+
+- **200**: elimina la cookie `currentUser` y responde `{ "status": "success", "message": "Logout exitoso" }`
 ## Autor
 
 Meier Leandro Agustín - Analista de Sistemas

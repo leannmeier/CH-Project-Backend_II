@@ -1,4 +1,5 @@
 import express from 'express';
+import cookieParser from 'cookie-parser';
 
 import eventsRouter from './routes/events.router.js';
 import healthsRouter from './routes/healths.router.js';
@@ -10,6 +11,8 @@ const app = express();
 
 app.use(express.json());
 app.disable('x-powered-by');
+
+app.use(cookieParser());
 
 app.use('/api/health', healthsRouter);
 app.use('/api/events', eventsRouter);

@@ -6,3 +6,6 @@ export async function create(userData){
 export async function findByEmail(email){
     return await sessionsDao.findByEmail(email);
 }
+export async function findByEmailWithPassword(email){
+    return await sessionsDao.findByEmailWithPassword(email);
+}

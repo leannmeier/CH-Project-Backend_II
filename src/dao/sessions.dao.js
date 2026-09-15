@@ -6,3 +6,6 @@ export async function create(data){
 export async function findByEmail(email){
     return await UserModel.findOne({ email: email });
 }
+export async function findByEmailWithPassword(email) {
+    return await UserModel.findOne({ email }).select('+password');
+}

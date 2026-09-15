@@ -1,7 +1,9 @@
 import * as sessionRepository from '../repositories/sessions.repository.js'
-import { hashPassword } from '../utils/password.util.js';
+import { hashPassword, comparePassword } from '../utils/hash.js';
+import { generateToken } from '../utils/jwt.js';
 
 const camposRequeridos = ['first_name', 'last_name', 'email', 'password'];
+const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;  
 
 export async function addUser(userData){
     let user
@@ -20,10 +22,46 @@ export async function addUser(userData){
     catch(error){
         return { error: error.message};
     }
-    const hastedPassword = await hashPassword(password);
-    return await sessionRepository.create({ ...user, password: hastedPassword });
+    const securePassword = await hashPassword(password);
+    return await sessionRepository.create({ ...user, password: securePassword });
 }
 
+export async function loginUser(userData){
+    const { email, password } = userData;  
+
+    // Validar campos
+    if(!email || !password){
+        return { error: 'Faltan campos obligatorios' };
+    }
+
+    // Normalizar / validar email
+    const normalizedEmail = email.trim().toLowerCase();
+    if(!regex.test(normalizedEmail)){
+        return { error: 'Credenciales inválidas' };
+    }
+
+    // Buscar usuario en la base de datos
+    const user = await sessionRepository.findByEmailWithPassword(normalizedEmail);
+    if(!user){
+        return { error: 'Credenciales inválidas' };
+    }
+
+    // Validar contraseña (funcion)
+    const validPassword = await comparePassword(password, user.password);
+    if(!validPassword){
+        return { error: 'Credenciales inválidas' };
+    }
+
+    // Generar token
+    const userToken = {
+        id: user._id,
+        email: user.email,
+        role: user.role
+    }
+    return generateToken(userToken);
+}
+
+// metodos auxiliares
 async function validateData(first_name, last_name, email, password){
     if(!first_name){
         throw new Error('Error al validar los datos. Nombre invalido');
@@ -34,8 +72,10 @@ async function validateData(first_name, last_name, email, password){
     if(!validatePassword(password)){
         throw new Error('Error al validar los datos. Contraseña invalida');
     }
+
     const normalizedEmail = email.trim().toLowerCase();
     await validateEmail(normalizedEmail); 
+
     return {
         first_name: first_name,
         last_name: last_name,
@@ -43,18 +83,20 @@ async function validateData(first_name, last_name, email, password){
         password: password
     }
 }
+
 async function validateEmail(email){
-    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if(!regex.test(email)){
         throw new Error('Error al validar los datos. Email invalido');
     }
-    if(await verifyEmail(email)){
+    if(await emailExists(email)){
         throw new Error('Error al validar los datos. Email no aceptado');
     }
 }
-async function verifyEmail(email){
+
+async function emailExists(email){
     return await sessionRepository.findByEmail(email);
 }
+
 function validatePassword(password){
     return password.length >= 8; 
 }

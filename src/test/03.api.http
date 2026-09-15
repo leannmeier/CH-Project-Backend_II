@@ -1,0 +1,25 @@
+### new user
+POST http://localhost:9909/api/sessions/register
+Content-Type: application/json  
+
+{
+  "first_name": "Juan Bautista Jr",
+  "last_name": "Sabadu",
+  "email": "juanbautistajrsabadu@gmail.com",
+  "password": "qwert12345"
+}
+
+### login del nuevo usuario
+POST http://localhost:9909/api/sessions/login
+Content-Type: application/json  
+
+{
+  "email": "juanbautistajrsabadu@gmail.com",
+  "password": "qwert12345"
+}
+
+### get current session
+GET http://localhost:9909/api/sessions/current
+
+### logout
+POST http://localhost:9909/api/sessions/logout
