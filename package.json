@@ -1,6 +1,6 @@
 {
   "name": "Event Plataform",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Plataforma de eventos con Node.js",
   "main": "index.js",
   "scripts": {
