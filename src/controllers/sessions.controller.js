@@ -1,25 +1,35 @@
 import * as sessionsService from '../services/sessions.service.js';
-import { asyncHandler } from "../utils/asyncHandler.js";
-
 import config from '../config/env.config.js';
 
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { generateToken } from '../utils/jwt.js';
 
 export const registerUser = asyncHandler(async (req, res) => {
-    let resultado = await sessionsService.addUser(req.body);
-    if(resultado?.error){
-        return res.status(400).json( { status: 'error', message: resultado.error } );
+    const resultado = await sessionsService.addUser(req.user);
+    if(!resultado){
+       return res.status(401).json( {status: 'error', message: 'No se pudo agregar al usuario'} )
     }
-    res.status(201).json( { status: 'success', payload: resultado } );
+
+    res.status(201).json( { status: 'success', payload: {
+        _id: resultado._id,
+        first_name: resultado.first_name,
+        last_name: resultado.last_name,
+        email: resultado.email,
+        role: resultado.role
+    } } );
 })
 
 export const loginUser = asyncHandler(async (req, res) => {
-    let resultado = await sessionsService.loginUser(req.body);  
-    if(resultado?.error){
-        return res.status(401).json( { status: 'error', message: resultado.error } );
+    const userToken = {
+        id: req.user._id,
+        email: req.user.email,
+        role: req.user.role
     }
-    res.cookie('currentUser', resultado, {
+    const token = generateToken(userToken);
+
+    res.cookie('currentUser', token, {
         httpOnly: true,
-        maxAge: config.jwtExpiresIn * 60 * 1000,
+        maxAge: config.jwtExpiresIn * 1000,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
     });
@@ -27,15 +37,17 @@ export const loginUser = asyncHandler(async (req, res) => {
 }); 
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-    const { id, email, role } = req.user;
-    const user = {
-        id: id,
-        email: email,
-        role: role
-    }
-    res.status(200).json({ status: 'success', payload: user });
+    res.status(200).json({
+        status: 'success',
+        payload:{
+            id: req.user._id,
+            first_name: req.user.first_name,
+            last_name: req.user.last_name,
+            email: req.user.email,
+            role: req.user.role,
+        }
+    })
 });
-
 
 export const logoutUser = asyncHandler(async (req, res) => {
     res.clearCookie('currentUser');
