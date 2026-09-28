@@ -1,0 +1,23 @@
+
+### Me logueo con un usuario admin
+POST http://localhost:9909/api/sessions/login
+Content-Type: application/json
+
+{
+    "email": "leomessi10@gmail.com",
+    "password": "elgoat10"
+}
+
+### Verificamos que sea admin (ya fue modificado en la base de datos)
+GET http://localhost:9909/api/sessions/current
+
+
+### Como estoy logueado con un usuario admin, deberia poder borrar cualquier evento
+### 200 si el evento existe y como admin la borro
+### 400 si no existe ese evento (cambie el ultimo digito de 6 a 1)
+DELETE http://localhost:9909/api/events/6ab9e17883536dbabcddb9b6
+
+
+### RUTA EXCLUSIVA PARA ADMIN. Ver todos los usuarios registrados
+### (TODOS. users, organizers y admins)
+GET http://localhost:9909/api/sessions/listUsers

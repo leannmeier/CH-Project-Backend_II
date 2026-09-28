@@ -1,7 +1,7 @@
-import * as sessionsService from '../services/sessions.service.js';
 import config from '../config/env.config.js';
+import * as sessionsService from '../services/sessions.service.js';
 
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
 import { generateToken } from '../utils/jwt.js';
 
 export const registerUser = asyncHandler(async (req, res) => {
@@ -53,3 +53,18 @@ export const logoutUser = asyncHandler(async (req, res) => {
     res.clearCookie('currentUser');
     res.status(200).json({ status: 'success', message: 'Logout exitoso' });
 });
+
+export const listUsers = asyncHandler(async (req,res) => {
+    const resultados = await sessionsService.listUsers();
+    if(resultados?.error){
+        return res.status(404).json( { status: 'error', message: resultados.error } );
+    }
+    res.status(200).json( { status: 'success', payload: resultados.map( u => {
+        return {
+            first_name: u.first_name,
+            last_name: u.last_name,
+            email: u.email,
+            role: u.role
+        };
+    })});
+})

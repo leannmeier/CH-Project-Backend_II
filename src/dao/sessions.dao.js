@@ -12,3 +12,6 @@ export async function findById(id){
 export async function findByEmailWithPassword(email) {
     return await UserModel.findOne({ email }).select('+password');
 }
+export async function listUsers(){
+    return await UserModel.find({});
+}

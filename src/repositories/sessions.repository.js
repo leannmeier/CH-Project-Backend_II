@@ -12,3 +12,6 @@ export async function findById(id){
 export async function findByEmailWithPassword(email){
     return await sessionsDao.findByEmailWithPassword(email);
 }
+export async function listUsers(){
+    return await sessionsDao.listUsers();
+}

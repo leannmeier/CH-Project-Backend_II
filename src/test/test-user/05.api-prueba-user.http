@@ -1,0 +1,64 @@
+### Creamos un nuevo usuario
+POST http://localhost:9909/api/sessions/register
+Content-Type: application/json  
+
+{
+  "first_name": "Homero" ,
+  "last_name": "Sanchéz",
+  "email": "homerosanchez@gmail.com",
+  "password": "12345678"
+}
+
+### Intentamos hacer login con un user no registradro
+### (Deberia devolver 401)
+POST http://localhost:9909/api/sessions/login
+Content-Type: application/json  
+
+{
+  "email": "pepe@gmail.com",
+  "password": "pepe1234"
+}
+
+### Hacemos login con el usuario que acabamos de registrar
+### (Deberia devolver 200)
+POST http://localhost:9909/api/sessions/login
+Content-Type: application/json  
+
+{
+  "email": "juanbautistajrsabadu@gmail.com",
+  "password": "qwert12345"
+}
+
+### Current (con usuario logeado o no. depende el orden)
+
+### (Deberia devolver 401 por: Si no estoy logueado, si expiro la cookie o si fue alterada)
+### (Deberia devolver 200 si la sesión sigue activa)
+GET http://localhost:9909/api/sessions/current
+
+### Intentamos crear un evento 
+### (Como somos usuario, deberia devolver 403)
+### (Si la sesión expiró, 401)
+POST http://localhost:9909/api/events
+Content-Type: application/json
+
+{
+    "title": "El cisne negro",
+    "description": "Una bailarina empieza a perder el frágil sentido de la realidad cuando una compañera recién llegada amenaza con usurpar su posición en el papel principal de 'El lago de los cisnes'",
+    "date": "2026-10-01"
+}
+
+### Hacemos logout (200 si sale bien)
+POST http://localhost:9909/api/sessions/logout
+
+
+### Ruta pública (Ver todos los eventos registrador)
+GET http://localhost:9909/api/events
+
+### Intentamos realizar una acción no permitida para un usuario
+### Borrar un evento
+DELETE http://localhost:9909/api/events/6ab9d8be2e345f37012c62c5
+
+
+### RUTA EXCLUSIVA PARA ADMINS
+### Deberia devolver 403 
+GET http://localhost:9909/api/sessions/listUsers

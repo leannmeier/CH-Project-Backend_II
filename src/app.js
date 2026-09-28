@@ -7,7 +7,7 @@ import healthsRouter from './routes/healths.router.js';
 import sessionsRouter from './routes/sessions.router.js';
 
 import './config/passport.config.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import { errorHandler } from './middlewares/errorHandler.middleware.js';
 
 const app = express();
 
