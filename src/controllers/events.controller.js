@@ -8,11 +8,18 @@ export const getEvents = asyncHandler(async (req, res) => {
         return res.status(404).json({ status: 'error', message: resultado.error });
     }
     res.status(200).json( { status: 'success', payload: resultado.map( e => {
+        const org = e.organizer
         return {
             title: e.title,
             description: e.description,
             date: e.date,
-            organizer: e.organizer
+            organizer: {
+                id: org._id,
+                first_name: org.first_name,
+                last_name: org.last_name,
+                email: org.email,
+                role: org.role
+            }
         }})   
     } );
 });

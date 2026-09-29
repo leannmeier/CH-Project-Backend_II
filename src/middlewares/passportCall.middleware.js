@@ -6,7 +6,7 @@ export const passportCall = (strategy) =>{
             if(err) return next(err);
 
             if(!user){
-                req.authError = info?.message || 'Credenciales invalidas';
+                req.authError = info;
                 return next();
             }
             req.user = user;

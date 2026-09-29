@@ -10,8 +10,8 @@ import config from '../config/env.config.js';
 const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; 
 const CANT_CARACTERES = 8;
 const errorCredential = {
-    status: 'error',
-    message: 'Credenciales invalidas'
+    message: 'Credenciales invalidas',
+    code: 401
 };
 
 const cookieExtractor = req => {
@@ -36,7 +36,8 @@ passport.use(
                 if(!first_name || !last_name || !email || !password){
                     return done(
                         null, false,{
-                            message: 'Faltan campos obligatorios'
+                            message: 'Faltan campos obligatorios',
+                            code: 400
                         }
                     );
                 }
@@ -76,7 +77,8 @@ passport.use('login',
             try{
                 if(!email || !password){
                     return done(null, false, {
-                        message: 'Error al iniciar sesión'
+                        message: 'Error al iniciar sesión',
+                        code: 400
                     })
                 }
 
@@ -108,7 +110,8 @@ passport.use('current',
                 const user = await sessionRepository.findById(jwtPayload.id);
                 if(!user){
                     return done(null, false, {
-                        message: 'Usuario no encontrado'
+                        message: 'Usuario no encontrado',
+                        code: 404
                     });
                 } 
                 return done(null, user);

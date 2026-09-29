@@ -5,7 +5,9 @@ export async function create(event) {
 }
 
 export async function getAll() {
-    return await EventModel.find({});
+    return await EventModel.find({}).populate({
+        path: 'organizer'
+    });
 }
 
 export async function findByTitleAndOrganizer(title, organizer) {
