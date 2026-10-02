@@ -78,7 +78,7 @@ El servidor queda disponible en `http://localhost:<PORT>`.
 Toda la lógica de autenticación está centralizada en `src/config/passport.config.js`. Implementa tres estrategias: `register` y `login` (`passport-local`), y `current` (`passport-jwt`, con un extractor personalizado que lee el JWT desde la cookie `currentUser` en vez del header `Authorization`). Se invocan a través del middleware reutilizable `passportCall`, que permite devolver mensajes de error específicos en vez del 401 genérico de Passport.
 
 ## Estructura de carpetas
-```
+
 ```
 backend-turnos-reservas/
 ├── src/
