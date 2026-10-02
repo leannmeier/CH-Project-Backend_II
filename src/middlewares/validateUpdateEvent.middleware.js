@@ -1,12 +1,31 @@
 export const validateUpdateEvent = (req, res, next) => {
-    const { title, description, date } = req.body;
+    const { title, description, category, date, location, capacity, price } = req.body;
 
-    // 1. Verificar que se envie al menos un campo para actualizar
-    if (!title && !description && !date) return res.status(400).json({ status: 'error', message: 'Debes enviar al menos un campo para actualizar (title, description o date)' });
+    if (!title || !description || !category || !date || !location || !capacity || price === undefined) {
+        return res.status(400).json({ status: 'error', message: 'Como se trata de una actualización total, debes enviar todos los campos' });
+    }
 
-    // 2. Si un campo viene en la peticion, validar que no este vacio o en blanco
-    if (title !== undefined && title.trim() === '') return res.status(400).json({ status: 'error', message: 'El título no puede estar vacío' });
-    if (description !== undefined && description.trim() === '') return res.status(400).json({ status: 'error', message: 'La descripción no puede estar vacía' });
+    if (title.trim() === '') {
+        return res.status(400).json({ status: 'error', message: 'El título no puede estar vacío' });
+    }
+    if (description.trim() === '') {
+        return res.status(400).json({ status: 'error', message: 'La descripción no puede estar vacía' });
+    }
+    if (category.trim() === '') {
+        return res.status(400).json({ status: 'error', message: 'La categoría no puede estar vacía' });
+    }
+    if (isNaN(Date.parse(date))) {
+        return res.status(400).json({ status: 'error', message: 'La fecha no es válida' });
+    }
+    if (location.trim() === '') {
+        return res.status(400).json({ status: 'error', message: 'La ubicación no puede estar vacía' });
+    }
+    if(isNaN(capacity) || capacity < 1) {
+        return res.status(400).json({ status: 'error', message: 'La capacidad debe ser un número positivo mayor a 0' });
+    }
+    if ((isNaN(price) || price < 0)) {
+        return res.status(400).json({ status: 'error', message: 'El precio debe ser un número positivo' });
+    }
 
     next();
 };

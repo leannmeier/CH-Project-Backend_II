@@ -1,7 +1,7 @@
 export function errorHandler(error, req, res, next) {
     // Error cuando un ObjectId de MongoDB no tiene el formato correcto (ej: "123")
     if (error.name === 'CastError') {
-        return res.status(400).json({ status: 'error', message: 'El ID proporcionado no es válido' });
+        return res.status(400).json({ status: 'error', message: 'El ID proporcionado no tiene formato válido' });
     }
 
     // Error cuando se viola una regla del Schema (ej: un campo marcado como required que no se manda)

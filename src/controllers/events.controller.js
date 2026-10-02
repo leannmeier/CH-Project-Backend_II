@@ -1,27 +1,24 @@
 import * as eventsService from '../services/events.service.js';
 
 import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
+import { printEvent } from '../utils/printEvent.js';
 
 export const getEvents = asyncHandler(async (req, res) => {
-    const resultado = await eventsService.getAllEvents();
+    const resultado = await eventsService.getAllEvents(req.query);
     if (resultado?.error) {
-        return res.status(404).json({ status: 'error', message: resultado.error });
+        const code = resultado.code;
+        return res.status(code).json({ status: 'error', message: resultado.error });
     }
-    res.status(200).json( { status: 'success', payload: resultado.map( e => {
-        const org = e.organizer
-        return {
-            title: e.title,
-            description: e.description,
-            date: e.date,
-            organizer: {
-                id: org._id,
-                first_name: org.first_name,
-                last_name: org.last_name,
-                email: org.email,
-                role: org.role
-            }
-        }})   
-    } );
+    res.status(200).json( { status: 'success', payload: resultado });
+});
+
+export const getEvent = asyncHandler(async (req, res) => {
+    const { eid } = req.params;
+    const resultado = await eventsService.getEvent(eid);
+    if(resultado?.error){
+        return res.status(404).json( { status: 'error', message: resultado.error } );
+    }
+    res.status(200).json( { status: 'success', payload: printEvent(resultado) });
 });
 
 export const addEvent = asyncHandler(async (req,res) => {
@@ -29,14 +26,8 @@ export const addEvent = asyncHandler(async (req,res) => {
     if(resultado?.error){
         return res.status(400).json( { status: 'error', message: resultado.error } )
     }
-    res.status(201).json( { status: 'success', payload: {
-        title: resultado.title,
-        description: resultado.description,
-        date: resultado.date,
-        organizer: resultado.organizer
-    }});
-})
-
+    res.status(201).json( { status: 'success', payload: printEvent(resultado) });
+});
 
 export const updateEvent = asyncHandler(async (req, res) => {
     const { eid } = req.params;
@@ -45,24 +36,17 @@ export const updateEvent = asyncHandler(async (req, res) => {
         const status = resultado.code || 400;
         return res.status(status).json({ status: 'error', message: resultado.error });
     }
-    res.status(200).json({ status: 'success', payload: {
-        title: resultado.title,
-        description: resultado.description,
-        date: resultado.date,
-        organizer: resultado.organizer
-    } });
+    res.status(200).json({ status: 'success', payload: printEvent(resultado) });
 });
 
-export const deleteEvent = asyncHandler(async (req,res) => {
+export const patchEvent = asyncHandler(async (req, res) => {
     const { eid } = req.params;
-    const resultado = await eventsService.deleteEvent(eid, req.user);
+    const { status } = req.body;
+    
+    const resultado = await eventsService.patchEvent(eid, status, req.user);
     if (resultado?.error) {
-        return res.status(resultado.code).json( { status: 'error', message: resultado.error } );
+        const code = resultado.code || 400;
+        return res.status(code).json({ status: 'error', message: resultado.error });
     }
-    res.status(200).json({ status: 'success', payload: {
-        title: resultado.title,
-        description: resultado.description,
-        date: resultado.date,
-        organizer: resultado.organizer
-    } });
+    res.status(200).json( { status: 'success', payload: printEvent(resultado) } );
 });

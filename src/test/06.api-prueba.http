@@ -1,0 +1,155 @@
+### Casos de prueba:
+### 1- Crear un evento con rol 'user' -> 403
+### Nos loqueamos con un usuario ya registrado cuyo rol es 'user'
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "juanbautistajrsabadu@gmail.com",
+    "password": "juan1234"
+}
+
+### Hacemos current
+GET http://localhost:9909/api/sessions/current 
+
+### Intentamos crear un evento siendo un 'user'. Deberia devolver 403 
+POST http://localhost:9909/api/events 
+Content-Type: application/json
+
+{
+    "title": "¿Donde esta wally?",
+    "description": "Encuentra a wally",
+    "category": "Entretenimiento",
+    "date": "2027-07-16",
+    "location": " de Buenos Aires",
+    "capacity": 50,
+    "price": 100
+}
+
+
+### ---------------------------------------------------------------------------------------------------
+### 2- Crear un evento con fecha pasada
+### Nos loqueamos con un usuario ya registrado cuyo rol es 'organizer'
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "homerosanchez@gmail.com",
+    "password": "homero1234"
+}
+### Hacemos current
+GET http://localhost:9909/api/sessions/current 
+
+### Intentamos crear un evento con fecha pasada. Deberia devolver un 400 con un error especifico 
+POST http://localhost:9909/api/events/ 
+Content-Type: application/json
+
+{
+    "title": "¿Donde esta wally?",
+    "description": "Encuentra a wally",
+    "category": "Entretenimiento",
+    "date": "1999-07-16",
+    "location": " de Buenos Aires",
+    "capacity": 50,
+    "price": 100
+}
+
+### ---------------------------------------------------------------------------------------------------
+### 3- Intento crear un evento con capacidad 0 -> 400
+POST http://localhost:9909/api/events/ 
+Content-Type: application/json
+
+{
+    "title": "FIFA World Cup 2030",
+    "description": "Mundial de futbol",
+    "category": "Entretenimiento",
+    "date": "2030-07-16",
+    "location": "Ciudad de Buenos Aires",
+    "capacity": 0,
+    "price": 100
+}
+
+### ---------------------------------------------------------------------------------------------------
+### 4- Un organizer modifica evento propio -> 200
+### Le mando un evento existente y que le pertenece al organizador
+### status: draft (valor por defecto)
+PATCH http://localhost:9909/api/events/6abf01469cf194bbd75a47a9/status 
+Content-Type: application/json
+
+{
+    "status": "publishied"
+}
+
+### ---------------------------------------------------------------------------------------------------
+### 5- Un organizer modifica evento ajeno -> 403
+### Le mando un evento existente y pero que no le pertenece
+### status: draft (valor por defecto)
+PATCH http://localhost:9909/api/events/6abf07369cf194bbd75a47ac/status 
+Content-Type: application/json
+
+{
+    "status": "published"
+}
+### ---------------------------------------------------------------------------------------------------
+### 6- un admin modificando evento de otro organiador -> 200
+### Me logueo como admin
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "cosmefulanito@gmail.com",
+    "password": "cosme1234"
+}
+
+### Hacemos current
+GET http://localhost:9909/api/sessions/current 
+
+### Intento revertir lo que el organizador cambio en el prueba 4
+PATCH http://localhost:9909/api/events/6abf01469cf194bbd75a47a9/status 
+Content-Type: application/json
+
+{
+    "status": "draft"
+}
+
+### ---------------------------------------------------------------------------------------------------
+### 7- Cambiar estado de un evento cancelado -> 400 
+### Nos logueamos como un organizer
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "homerosanchez@gmail.com",
+    "password": "homero1234"
+}
+### Hacemos current
+GET http://localhost:9909/api/sessions/current 
+
+### Este tiene un evento con status: draft. Lo cambiamos a 'cancelled' -> 200
+PATCH http://localhost:9909/api/events/6abf01469cf194bbd75a47a9/status 
+Content-Type: application/json
+
+{
+    "status": "cancelled"
+}
+### y tratamos de revertirlo a 'draft' -> 400
+PATCH http://localhost:9909/api/events/6abf01469cf194bbd75a47a9/status 
+Content-Type: application/json
+
+{
+    "status": "draft"
+}
+
+### ---------------------------------------------------------------------------------------------------
+### RUTAS PUBLICAS
+
+### 8- Listar con filtros: ?status=published&category=workshop&page=2&limit=5
+GET http://localhost:9909/api/events?status=published
+
+### ---------------------------------------------------------------------------------------------------
+### 9- Consultar evento inexistente
+### Primero intento con un formato de id incorrecto -> 400
+GET http://localhost:9909/api/events/1234
+
+### Luego, intento con un evento que no existe -> 404
+GET http://localhost:9909/api/events/6abf01469cf194bbd75a0000
