@@ -80,7 +80,7 @@ Toda la lógica de autenticación está centralizada en `src/config/passport.con
 ## Estructura de carpetas
 
 ```
-backend-turnos-reservas/
+CH-Project-Backend_II
 ├── src/
 │   ├── app.js
 │   ├── server.js
