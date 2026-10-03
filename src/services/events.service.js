@@ -149,8 +149,7 @@ export async function updateEvent(eid, eventData, userData) {
         date: eventDate,
         location: eventData.location,
         capacity: eventData.capacity,
-        price: eventData.price,
-        organizer: userData._id,
+        price: eventData.price
     }
 
     return await eventsRepository.update(eid, updatePayload);
