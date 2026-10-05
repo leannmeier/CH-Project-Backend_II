@@ -1,7 +1,7 @@
-import passport from "passport";
 import { Router } from "express";
 
-import { getEvents, getEvent, addEvent, updateEvent, patchEvent } from "../controllers/events.controller.js";
+import { getEvents, getEvent, addEvent, updateEvent, patchEvent, getTickets } from "../controllers/events.controller.js";
+import { createTicket } from "../controllers/tickets.controller.js";
 
 import { authorization } from '../middlewares/authorization.middleware.js';
 import { passportCall } from "../middlewares/passportCall.middleware.js";
@@ -9,6 +9,7 @@ import { requireAuth } from "../middlewares/requireAuth.middleware.js";
 import { validateEvent } from "../middlewares/validateEvent.middleware.js";
 import { validateUpdateEvent } from "../middlewares/validateUpdateEvent.middleware.js";
 import { validatePatchEvent } from '../middlewares/validatePatchEvent.middleware.js';
+import { validateTicket } from "../middlewares/validateTicket.middleware.js";
 
 const router = Router();
 
@@ -40,5 +41,20 @@ router.patch('/:eid/status',
     validatePatchEvent,
     patchEvent
 )
+
+// Ruta para crear un ticket para un evento especifico
+router.post('/:eid/tickets',
+    passportCall('current'),
+    requireAuth,
+    validateTicket,
+    createTicket
+);
+
+router.get('/:eid/tickets',
+    passportCall('current'),
+    requireAuth,
+    authorization(['organizer', 'admin']),
+    getTickets
+);
 
 export default router;

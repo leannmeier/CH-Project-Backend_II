@@ -5,6 +5,7 @@ import passport from 'passport';
 import eventsRouter from './routes/events.router.js';
 import healthsRouter from './routes/healths.router.js';
 import sessionsRouter from './routes/sessions.router.js';
+import ticketsRouter from './routes/tickets.router.js';
 
 import './config/passport.config.js';
 import { errorHandler } from './middlewares/errorHandler.middleware.js';
@@ -20,6 +21,7 @@ app.use(passport.initialize());
 app.use('/api/health', healthsRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/sessions', sessionsRouter);
+app.use('/api/tickets', ticketsRouter);
 
 app.use(errorHandler);
 

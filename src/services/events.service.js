@@ -1,5 +1,4 @@
-import * as eventsRepository from '../repositories/events.repository.js'; 
-import { STATUS } from '../constants/event.constants.js';
+import * as eventsRepository from '../repositories/events.repository.js';
 
 export async function getAllEvents(query = {}) {
     // Extraemos todos los posibles filtros
@@ -20,7 +19,7 @@ export async function getAllEvents(query = {}) {
 
     // validamos status, category y location
     if (status) {
-        if (!Object.values(STATUS).includes(status)) {
+        if (!Object.values(STATUS_EVENTS).includes(status)) {
             return { error: `El estado '${status}' no es válido`, code: 400 };
         }
         queryDinamic.status = status;
@@ -132,7 +131,7 @@ export async function updateEvent(eid, eventData, userData) {
     if(isNaN(eventDate.getTime()) || eventDate <= new Date()) return { error: 'La fecha del evento debe ser posterior a la fecha actual', code: 400 };
     
     // Luego, verificamos que el evento no esté cancelado
-    if (event.status === STATUS.CANCELLED) return { error: 'No se puede modificar un evento cancelado', code: 400 };   
+    if (event.status === STATUS_EVENTS.CANCELLED) return { error: 'No se puede modificar un evento cancelado', code: 400 };   
     
     // Luego, verificamos que el título no esté duplicado para el mismo organizador 
     const normalizedTitle = eventData.title.toLowerCase().trim();
@@ -166,12 +165,12 @@ export async function patchEvent(eid, status, userData) {
     if (!isAdmin && !isOwner) return { error: 'No tienes permisos para realizar esta acción', code: 403 };
 
     // 3. Si el evento YA está cancelado, no se permite ninguna modificación
-    if (event.status === STATUS.CANCELLED) {
+    if (event.status === STATUS_EVENTS.CANCELLED) {
         return { error: 'No se puede modificar un evento cancelado', code: 400 };
     }
 
     // 4. Si intentan publicarlo pero el estado actual YA es finalizado (se removió CANCELLED)
-    if (status === STATUS.PUBLISHED && event.status === STATUS.FINISHED) {
+    if (status === STATUS_EVENTS.PUBLISHED && event.status === STATUS_EVENTS.FINISHED) {
         return { error: 'No se puede publicar un evento que ya ha finalizado', code: 400 };
     }
 
