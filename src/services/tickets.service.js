@@ -86,12 +86,8 @@ export async function createTicket(eid, ticketData, userData){
 }
 
 export async function getMyTickets(userData) {
-    // Bucamos si existe un ticket con este usuario
-    const ticket = await ticketsRepository.getMyTickets(userData._id);
-    if(!ticket) return { error: 'No se encontraron tickets para este usuario ', code: 200};
-
-    // Devuelvo los tickets encontrados
-    return ticket;
+    // Bucamos si existen tickets con este usuario. De no existir, devuelve una lista vacia
+    return await ticketsRepository.getMyTickets(userData._id);
 }
 
 export async function getTickets(eid, userData){

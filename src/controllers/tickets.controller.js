@@ -15,10 +15,6 @@ export const createTicket = asyncHandler(async (req, res) => {
 
 export const getMyTickets = asyncHandler(async (req,res) => {
     const resultado = await ticketsService.getMyTickets(req.user);
-    if(resultado?.error){
-        const code = resultado.code;
-        return res.status(code).json( { status: 'error', message: resultado.error } );
-    }
     res.status(200).json( { status: 'success', payload: resultado.map(t => printTicket(t)) } );  
 });
 export const cancelTicket = asyncHandler(async (req,res) => {
