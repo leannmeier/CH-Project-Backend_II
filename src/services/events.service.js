@@ -1,4 +1,5 @@
 import * as eventsRepository from '../repositories/events.repository.js';
+import { STATUS_EVENTS } from '../constants/event.constants.js';
 
 export async function getAllEvents(query = {}) {
     // Extraemos todos los posibles filtros
@@ -82,26 +83,26 @@ export async function getAllEvents(query = {}) {
 
 export async function getEvent(eid){
     const event = await eventsRepository.findByIdPopulate(eid);
-    if(!event) return { error: 'No se encontro un evento con ese id' };
+    if(!event) return { error: 'No se encontro un evento con ese id', code: 404 };
     return event;
 }
 
-export async function addEvent(eventData, userData){
+export async function createEvent(eventData, userData){
     // Validamos la fecha
     const eventDate = new Date(eventData.date);
-    if(isNaN(eventDate.getTime()) || eventDate <= new Date() ) return { error: 'La fecha del evento debe ser posterior a la fecha actual' };
+    if(isNaN(eventDate.getTime()) || eventDate <= new Date() ) return { error: 'La fecha del evento debe ser posterior a la fecha actual', code: 400 };
 
     // Validamos que no haya titulo duplicado
     const normalizedTitle = eventData.title.toLowerCase().trim();
     const existingEvent = await eventsRepository.findByTitleAndOrganizer(normalizedTitle, userData._id);
-    if(existingEvent) return { error: 'Ya tienes un evento registrado con ese mismo titulo' };
+    if(existingEvent) return { error: 'Ya tienes un evento registrado con ese mismo titulo', code: 409 };
 
     // validamos la categoria
-    if(eventData.category === "") return { error: "La categoria no puede estar vacia" } ;
+    if(eventData.category === "") return { error: "La categoria no puede estar vacia", code: 400} ;
 
     // Validamos precio y capacidad
-    if(eventData.price < 0 ) return { error: "El precio no puede ser negativo" } ;
-    if(eventData.capacity <= 0 ) return { error: "La capacidad no puede ser negativa o valer 0" } ;
+    if(eventData.price < 0 ) return { error: "El precio no puede ser negativo", code: 400 } ;
+    if(eventData.capacity <= 0 ) return { error: "La capacidad no puede ser negativa o valer 0", code: 400 } ;
 
     const event = {
         title: normalizedTitle,
@@ -113,7 +114,7 @@ export async function addEvent(eventData, userData){
         price: eventData.price,
         organizer: userData._id
     }
-    return await eventsRepository.addEvent(event);
+    return await eventsRepository.createEvent(event);
 }
 
 export async function updateEvent(eid, eventData, userData) {
@@ -151,7 +152,7 @@ export async function updateEvent(eid, eventData, userData) {
         price: eventData.price
     }
 
-    return await eventsRepository.update(eid, updatePayload);
+    return await eventsRepository.updateEvent(eid, updatePayload);
 }
 
 export async function patchEvent(eid, status, userData) {
@@ -175,5 +176,5 @@ export async function patchEvent(eid, status, userData) {
     }
 
     // 5. Si todo está correcto, actualizamos el status
-    return await eventsRepository.patch(eid, status);
+    return await eventsRepository.patchEvent(eid, status);
 }

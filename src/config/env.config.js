@@ -41,7 +41,6 @@ if(!config.mailPass){
 if(!config.mailFrom){
     console.error(`Error fatal: MAIL FROM no esta definida`);
     process.exit(1);
-}        
-console.log(`Configuración exitosa: ${config.nodeEnv}`);
+}       
 
 export default config;

@@ -25,7 +25,7 @@ export async function createTicket(eid, ticketData, userData){
     // Verificamos si el usuario ya posee un ticket activo para este evento
     const existingTicket = await ticketsRepository.findConfirmedTicketByUserAndEvent(userData._id, eid);
     if (existingTicket) {
-        return { error: 'Ya tienes un ticket activo para este evento', code: 400 };
+        return { error: 'Ya tienes un ticket activo para este evento', code: 409 };
     }
 
     // Calculamos los cupos ocupados (sumando el campo quantity) y disponibles
@@ -72,7 +72,7 @@ export async function createTicket(eid, ticketData, userData){
         cancelledAt: null
     };
 
-    const newTicket = await ticketsRepository.create(ticket);
+    const newTicket = await ticketsRepository.createTicket(ticket);
     
     // Notificamos al comprador por email
     try{
@@ -86,7 +86,7 @@ export async function createTicket(eid, ticketData, userData){
 }
 
 export async function getMyTickets(userData) {
-    // Bucamos si existen tickets con este usuario. De no existir, devuelve una lista vacia
+    // Buscamos si existen tickets con este usuario. De no existir, devuelve una lista vacia
     return await ticketsRepository.getMyTickets(userData._id);
 }
 

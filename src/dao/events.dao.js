@@ -1,7 +1,8 @@
 import { EventModel } from '../models/Event.js';
 
 export async function create(event) {
-    return await EventModel.create(event);
+    const newEvent = await EventModel.create(event);
+    return await newEvent.populate('organizer');
 }
 
 export async function getAll({ query, sort, skip, limit }) {
@@ -14,7 +15,7 @@ export async function getAll({ query, sort, skip, limit }) {
     return {data: events, total: total};
 }
 
-export async function findByTitleAndOrganizer(title, organizer) {
+export async function findByTitleAndOrganizer(title, organizer){
     return await EventModel.findOne({ 
         title: title, 
         organizer: organizer 
@@ -31,16 +32,17 @@ export async function findById(eid){
     return await EventModel.findById(eid);
 }
 
-export async function update(eid, eventData) {
-    return await EventModel.findByIdAndUpdate(eid, eventData,
-        { 
+export async function updateEvent(eid, eventData) {
+    const updatedEvent = EventModel.findByIdAndUpdate(eid, eventData,
+{ 
             new: true,       
             runValidators: true
         }
     );
+    return await updatedEvent.populate('organizer');
 }
 
-export async function patch(eid, status) {
+export async function patchEvent(eid, status) {
     return await EventModel.findByIdAndUpdate(eid, 
         { status: status }, 
         { new: true }

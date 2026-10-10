@@ -1,5 +1,6 @@
 export function printTicket(ticket) {
     return {
+        id: ticket._id,
         code: ticket.reservationCode,
         user: {
             first_name: ticket.user.first_name,
@@ -11,6 +12,7 @@ export function printTicket(ticket) {
             description: ticket.event.description,
             date: ticket.event.date,
         },
-        status: ticket.status
+        status: ticket.status,
+        quantity: ticket.quantity
     }
 }

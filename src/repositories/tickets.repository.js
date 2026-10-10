@@ -1,6 +1,6 @@
 import * as ticketsDao from '../dao/tickets.dao.js';
 
-export async function create(ticketData){
+export async function createTicket(ticketData){
     return await ticketsDao.create(ticketData);
 }
 
@@ -29,5 +29,5 @@ export async function findById(tid){
 }
 
 export async function updateParcialTicket(id, status, cancelledAt){
-    return await ticketsDao.patch(id, status, cancelledAt);
+    return await ticketsDao.updateParcialTicket(id, status, cancelledAt);
 }

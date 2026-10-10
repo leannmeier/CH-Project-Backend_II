@@ -1,6 +1,6 @@
 import * as eventsDao from '../dao/events.dao.js';
 
-export async function addEvent(event){
+export async function createEvent(event){
     return await eventsDao.create(event);
 }
 
@@ -20,10 +20,10 @@ export async function findById(eid){
     return await eventsDao.findById(eid);
 }
 
-export async function update(eid, eventData){
-    return eventsDao.update(eid, eventData);
+export async function updateEvent(eid, eventData){
+    return eventsDao.updateEvent(eid, eventData);
 }
-export async function patch(eid, status){
-    return eventsDao.patch(eid, status);
+export async function patchEvent(eid, status){
+    return eventsDao.patchEvent(eid, status);
 }
 

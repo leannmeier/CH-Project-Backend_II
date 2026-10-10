@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getEvents, getEvent, addEvent, updateEvent, patchEvent, getTickets } from "../controllers/events.controller.js";
+import { getEvents, getEvent, createEvent, updateEvent, patchEvent, getTickets } from "../controllers/events.controller.js";
 import { createTicket } from "../controllers/tickets.controller.js";
 
 import { authorization } from '../middlewares/authorization.middleware.js';
@@ -23,7 +23,7 @@ router.post('/', // Listo
     requireAuth,
     authorization(['organizer', 'admin']),
     validateEvent,
-    addEvent
+    createEvent
 );
 
 router.put('/:eid',

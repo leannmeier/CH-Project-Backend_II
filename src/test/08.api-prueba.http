@@ -1,0 +1,171 @@
+### Casos de prueba
+
+### --------------------------------------------------------------------------------------------
+### 1.- Flujo completo: registro → login → crear evento → inscribirse → consultar mis tickets → cancelar
+### Creamos 5 usuarios. 2 users, 2 organizers y 1 admin 
+### (organizer y admin seran asignados directamente por la base de datos)
+POST http://localhost:9909/api/sessions/register 
+Content-Type: application/json
+
+{
+    "first_name": "user1",
+    "last_name": "bot1",
+    "email": "user1@gmail.com",
+    "password": "user1_1234",
+    "role": "puedo poner cualquier cosa, se asigna role:'user' por defecto"
+}
+###
+POST http://localhost:9909/api/sessions/register 
+Content-Type: application/json
+
+{
+    "first_name": "user2",
+    "last_name": "bot2",
+    "email": "user2@gmail.com",
+    "password": "user2_1234"
+}
+###
+POST http://localhost:9909/api/sessions/register 
+Content-Type: application/json
+
+{
+    "first_name": "orzanizer1",
+    "last_name": "org1",
+    "email": "organizer1@gmail.com",
+    "password": "organizer1_1234"
+}
+###
+POST http://localhost:9909/api/sessions/register 
+Content-Type: application/json
+
+{
+    "first_name": "organizer2",
+    "last_name": "org2",
+    "email": "organizer2@gmail.com",
+    "password": "organizer2_1234"
+}
+###
+POST http://localhost:9909/api/sessions/register 
+Content-Type: application/json
+
+{
+    "first_name": "Leandro",
+    "last_name": "Meier",
+    "email": "leandromeier@gmail.com",
+    "password": "admin1234",
+    "role": "puedo poner cualquier cosa, se asigna role:'user' por defecto"
+}
+
+### Nos registramos como un organizador
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "organizer1@gmail.com",
+    "password": "organizer1_1234"
+}
+
+### Creamos un evento:
+POST http://localhost:9909/api/events
+Content-Type: application/json
+
+{
+    "title": "evento 1",
+    "description": "descripcion del evento 1",
+    "category": "categoria 1",
+    "date": "2027-01-01",
+    "location": "ubicacion 1",
+    "capacity": 100,
+    "price": 10
+}
+### Hacemos logout e iniciamos sesión con un usuario
+POST http://localhost:9909/api/sessions/logout
+
+###
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "user2@gmail.com",
+    "password": "user2_1234"
+}
+
+### Nos inscribimos a un evento
+POST http://localhost:9909/api/events/6ac96c5de8902df7496e38da/tickets
+Content-Type: application/json
+
+{
+    "quantity": 4
+}
+
+### Consultar mis tickets
+GET http://localhost:9909/api/tickets/my-tickets 
+
+### Cancelamos el ticket
+PATCH http://localhost:9909/api/tickets/6ac99ec09a40431703f63b6a/cancel
+
+### --------------------------------------------------------------------------------------------
+### 2.- Respuesta de /current no incluye password 
+GET http://localhost:9909/api/sessions/current
+
+### --------------------------------------------------------------------------------------------
+### 3.- Respuesta de ticket con populate no incluye password del usuario 
+GET http://localhost:9909/api/tickets/my-tickets 
+
+### --------------------------------------------------------------------------------------------
+### 4.- Endpoint con error de negocio devuelve código HTTP correcto (no 500)
+POST http://localhost:9909/api/sessions/logout
+
+### Me logueo como organizer 
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "organizer2@gmail.com",
+    "password": "organizer2_1234"
+}
+
+### Intento crear un evento que no cumpla con la logica de negocio 
+### (titulo repetido, precio negativo, capacidad menor o igual a 0)
+POST http://localhost:9909/api/events
+Content-Type: application/json
+
+{
+    "title": "evento 2",
+    "description": "descripcion del evento 2",
+    "category": "categoria 2",
+    "date": "2027-02-02",
+    "location": "ubicacion 2",
+    "capacity": 200,
+    "price": 20
+}
+
+### --------------------------------------------------------------------------------------------
+### 5.- Endpoint protegido sin sesión → 401; con sesión sin permisos → 403
+### Cerramos sesión
+POST http://localhost:9909/api/sessions/logout
+
+### Sin iniciar sesión, intentamos crear un evento
+POST http://localhost:9909/api/events
+Content-Type: application/json
+
+{
+    "title": "evento 3",
+    "description": "descripcion del evento 3",
+    "category": "categoria 3",
+    "date": "2027-03-03",
+    "location": "ubicacion 3",
+    "capacity": 300,
+    "price": 30
+}
+
+### Nos logueamos como un usuario e intentamos crear un evento
+POST http://localhost:9909/api/sessions/login 
+Content-Type: application/json
+
+{
+    "email": "user1@gmail.com",
+    "password": "user1_1234"
+}
+
+###

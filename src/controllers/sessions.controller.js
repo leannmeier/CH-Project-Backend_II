@@ -1,22 +1,15 @@
 import config from '../config/env.config.js';
 import * as sessionsService from '../services/sessions.service.js';
 
+
+import { CurrentUserDTO } from '../dto/current-user.dto.js';
+import { ListUsersDTO } from '../dto/list-users.dto.js'; 
 import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
 import { generateToken } from '../utils/jwt.js';
 
 export const registerUser = asyncHandler(async (req, res) => {
-    const resultado = await sessionsService.addUser(req.user);
-    if(!resultado){
-       return res.status(401).json( {status: 'error', message: 'No se pudo agregar al usuario'} )
-    }
-
-    res.status(201).json( { status: 'success', payload: {
-        _id: resultado._id,
-        first_name: resultado.first_name,
-        last_name: resultado.last_name,
-        email: resultado.email,
-        role: resultado.role
-    } } );
+    const userDTO = new CurrentUserDTO(await sessionsService.addUser(req.user));
+    res.status(201).json( { status: 'success', payload: userDTO } );
 })
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -37,16 +30,8 @@ export const loginUser = asyncHandler(async (req, res) => {
 }); 
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        payload:{
-            id: req.user._id,
-            first_name: req.user.first_name,
-            last_name: req.user.last_name,
-            email: req.user.email,
-            role: req.user.role,
-        }
-    })
+    const userDTO = new CurrentUserDTO(req.user);
+    res.status(200).json({ status: 'success',payload: userDTO });
 });
 
 export const logoutUser = asyncHandler(async (req, res) => {
@@ -56,15 +41,10 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
 export const listUsers = asyncHandler(async (req,res) => {
     const resultados = await sessionsService.listUsers();
-    if(resultados?.error){
-        return res.status(404).json( { status: 'error', message: resultados.error } );
+    if(resultados.length === 0){
+        return res.status(200).json( { status: 'success', message: 'No hay usuarios registrados' } );
     }
     res.status(200).json( { status: 'success', payload: resultados.map( u => {
-        return {
-            first_name: u.first_name,
-            last_name: u.last_name,
-            email: u.email,
-            role: u.role
-        };
+        return new ListUsersDTO(u);
     })});
 })

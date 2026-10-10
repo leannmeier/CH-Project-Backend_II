@@ -1,18 +1,10 @@
 import passport from 'passport'
-
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as JwtStrategy } from 'passport-jwt';
-import { hashPassword, comparePassword } from '../utils/hash.js';
 
-import * as sessionRepository from '../repositories/sessions.repository.js';
+import * as sessionsService from '../services/sessions.service.js';
+
 import config from '../config/env.config.js';
-
-const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; 
-const CANT_CARACTERES = 8;
-const errorCredential = {
-    message: 'Credenciales invalidas',
-    code: 401
-};
 
 const cookieExtractor = req => {
     let token = null;
@@ -32,33 +24,12 @@ passport.use(
         async (req, email, password, done ) =>{
             try{
                 const { first_name, last_name } = req.body;
+                const resultado = await sessionsService.validateRegister( { first_name: first_name, last_name: last_name, email: email, password: password } );
 
-                if(!first_name || !last_name || !email || !password){
-                    return done(
-                        null, false,{
-                            message: 'Faltan campos obligatorios',
-                            code: 400
-                        }
-                    );
-                }
+                if(resultado?.message) return done(null, false, resultado);
 
-                const normalizedEmail = email.toLowerCase().trim();
-                if(!regex.test(normalizedEmail)) return done(null, false, errorCredential);
-
-                const userExists = await sessionRepository.findByEmail(normalizedEmail);
-                if(userExists) return done(null, false, errorCredential);
-
-                if(password.length < CANT_CARACTERES) return done(null, false, errorCredential);
-
-                const securePassword = await hashPassword(password);
-
-                const newUser = {
-                    first_name: first_name,
-                    last_name: last_name,
-                    email: normalizedEmail,
-                    password: securePassword,
-                }
-                return done(null, newUser);
+                // Si pasa todas las validaciones, debe llegar hasta aca y continuar con el proceso de registro
+                return done(null, resultado);
             }
             catch(error){
                 return done(error);
@@ -75,21 +46,10 @@ passport.use('login',
         },
         async (email, password, done) => {
             try{
-                if(!email || !password){
-                    return done(null, false, {
-                        message: 'Error al iniciar sesión',
-                        code: 400
-                    })
-                }
+                const resultado = await sessionsService.validateLogin( { email: email, password: password } );
+                if(resultado?.message) return done(null, false, resultado)
 
-                const normalizedEmail = email.toLowerCase().trim();
-                const user = await sessionRepository.findByEmailWithPassword(normalizedEmail);
-                if(!user) return done(null, false, errorCredential);
-
-                const validPassword = await comparePassword(password, user.password);
-                if(!validPassword) return done(null, false, errorCredential);
-                
-                return done(null, user);
+                return done(null, resultado);
             }
             catch(error){
                 return done(error);
@@ -107,14 +67,11 @@ passport.use('current',
         },
         async (jwtPayload, done) => {
             try{
-                const user = await sessionRepository.findById(jwtPayload.id);
-                if(!user){
-                    return done(null, false, {
-                        message: 'Usuario no encontrado',
-                        code: 404
-                    });
-                } 
-                return done(null, user);
+                const currentUser = await sessionsService.getUserById(jwtPayload.id);
+
+                if(currentUser?.message) return done(null, false, currentUser);
+                
+                return done(null, currentUser);
             }
             catch(error){
                 return done(error);

@@ -12,7 +12,7 @@ export function errorHandler(error, req, res, next) {
 
     // Error de duplicidad en índices únicos (ej: intentar guardar un email o un índice unique que ya existe en la base de datos)
     if (error.code === 11000) {
-        return res.status(400).json({ status: 'error', message: 'No puedes usar esas credenciales' });
+        return res.status(409).json({ status: 'error', message: 'No puedes usar esas credenciales' });
     }
     console.error('Error no controlado:', error);
 

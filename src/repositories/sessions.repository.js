@@ -1,6 +1,6 @@
 import * as sessionsDao from '../dao/sessions.dao.js';
 
-export async function create(userData){
+export async function createUser(userData){
     return await sessionsDao.create(userData);
 }
 export async function findByEmail(email){

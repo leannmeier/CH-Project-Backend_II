@@ -2,8 +2,8 @@ import * as eventsService from '../services/events.service.js';
 import * as ticketsService from '../services/tickets.service.js';
 
 import { asyncHandler } from "../middlewares/asyncHandler.middleware.js";
-import { printEvent } from '../utils/printEvent.js';
-import { printTicket } from '../utils/printTicket.js';
+import { printEvent } from '../dto/event-response.dto.js';
+import { printTicket } from '../dto/ticket-response.dto.js';
 
 export const getEvents = asyncHandler(async (req, res) => {
     const resultado = await eventsService.getAllEvents(req.query);
@@ -23,10 +23,11 @@ export const getEvent = asyncHandler(async (req, res) => {
     res.status(200).json( { status: 'success', payload: printEvent(resultado) });
 });
 
-export const addEvent = asyncHandler(async (req,res) => {
-    const resultado = await eventsService.addEvent(req.body, req.user);
+export const createEvent = asyncHandler(async (req,res) => {
+    const resultado = await eventsService.createEvent(req.body, req.user);
     if(resultado?.error){
-        return res.status(400).json( { status: 'error', message: resultado.error } )
+        const code = resultado.code || 400;
+        return res.status(code).json( { status: 'error', message: resultado.error } )
     }
     res.status(201).json( { status: 'success', payload: printEvent(resultado) });
 });

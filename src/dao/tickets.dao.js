@@ -52,7 +52,7 @@ export async function findById(tid){
     return await TicketModel.findById(tid);
 }
 
-export async function patch(id, status, cancelledAt){
+export async function updateParcialTicket(id, status, cancelledAt){
     return await TicketModel.findByIdAndUpdate(id, 
         { 
             status: status,
